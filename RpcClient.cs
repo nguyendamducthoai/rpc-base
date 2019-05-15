@@ -53,10 +53,15 @@ namespace rpc_base
 
         private string Call(string message)
         {
+            return Call(message, _producerEndpoint);
+        }
+        
+        private string Call(string message, string queue)
+        {
             var messageBytes = Encoding.UTF8.GetBytes(message);
             _channel.BasicPublish(
                 exchange: "",
-                routingKey: _producerEndpoint,
+                routingKey: queue,
                 basicProperties: _props,
                 body: messageBytes);
 
@@ -72,6 +77,11 @@ namespace rpc_base
         {
             var task = await Task.Run(() => Call(input) );
             return task;
+        }
+
+        public async Task<string> CallAsync(string input, string queue)
+        {
+            return await Task.Run(() => Call(input, queue));
         }
 
         public void Dispose()
