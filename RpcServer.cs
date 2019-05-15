@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
-namespace rpc_base.demo
+namespace rpc_base
 {
-    public class RPCServer: IDisposable
+    public abstract class RpcServer: IDisposable,IRpcServer<string>
     {
         private static string _consumerEndpoint;
         private static string _hostName;
         private EventHandler<BasicDeliverEventArgs> _consumerOnReceived;
         private EventingBasicConsumer _consumer;
-        public RPCServer(Dictionary<string, string> config)
+        public RpcServer(Dictionary<string, string> config)
         {
             _consumerEndpoint = config["ConsumerEnpoint"];
             _hostName = config["HostName"];
@@ -22,6 +23,7 @@ namespace rpc_base.demo
         {
             var factory = new ConnectionFactory() {HostName = _hostName};
             using (var connection = factory.CreateConnection())
+                
             using (var channel = connection.CreateModel())
             {
                 channel.QueueDeclare(queue:_consumerEndpoint, durable: false,
@@ -33,7 +35,7 @@ namespace rpc_base.demo
                 
                 Console.WriteLine($"[x] Awaiting RPC requests at {_consumerEndpoint}");
 
-                _consumerOnReceived = (model, ea) =>
+                _consumerOnReceived = async (model, ea) =>
                 {
                     string response = null;
 
@@ -45,10 +47,7 @@ namespace rpc_base.demo
                     try
                     {
                         var message = Encoding.UTF8.GetString(body);
-                        int n = int.Parse(message);
-                        Console.WriteLine(" [.] fib({0})", message);
-                        response = fib(n).ToString();
-                        Thread.Sleep(3000);
+                        response = await onMessage(message);
                     }
                     catch (Exception e)
                     {
@@ -69,20 +68,12 @@ namespace rpc_base.demo
                 Thread.Sleep(Timeout.Infinite); // sleep forever
             }
         }
-        
-        private static int fib(int n)
-        {
-            if (n == 0 || n == 1)
-            {
-                return n;
-            }
-
-            return fib(n - 1) + fib(n - 2);
-        }
 
         public void Dispose()
         {
-            
+            Console.WriteLine($"[x] Close RPC Server at {_consumerEndpoint}");
         }
+
+        public abstract Task<string> onMessage(string message);
     }
 }

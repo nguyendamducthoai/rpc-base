@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using rpc_base.demo;
-    
-namespace rpc_base
+
+namespace rpc_base.demo
 {
     class Program
     {
@@ -14,16 +13,14 @@ namespace rpc_base
             var rpcConfig = new Dictionary<string, string>();
             rpcConfig.Add("ConsumerEnpoint", "rpc_queue");
             rpcConfig.Add("HostName", "localhost");
-            
-            var rpcServer = new RPCServer(rpcConfig);
-            
+
+            var rpcServer = new RPCTest(rpcConfig);
+
+
             var thread = new Thread(() => { rpcServer.startServer(); });
+            
             thread.Start();
-            
-            Console.WriteLine("Hello World!");
-            
-            
-            
+
             Thread.Sleep(2000);
             
             var rpcClientConfig = new Dictionary<string, string>();
@@ -39,6 +36,7 @@ namespace rpc_base
                 Console.WriteLine(" [.] Got '{0}'", response);
 
                 Console.WriteLine("client finished");
+                thread.Interrupt();
             }
         }
     }

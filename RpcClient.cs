@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace rpc_base.demo
+namespace rpc_base
 {
     public class RpcClient: IDisposable
     {
@@ -68,11 +68,6 @@ namespace rpc_base.demo
             return _respQueue.Take();
         }
 
-        public void Close()
-        {
-            _connection.Close();
-        }
-
         public async Task<string> CallAsync(string input)
         {
             var task = await Task.Run(() => Call(input) );
@@ -82,7 +77,7 @@ namespace rpc_base.demo
         public void Dispose()
         {
             Console.WriteLine($"rpc client closed at {_producerEndpoint}");
-            Close();
+            _connection.Close();
         }
     }
 }
