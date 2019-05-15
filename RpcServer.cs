@@ -10,8 +10,8 @@ namespace rpc_base
 {
     public abstract class RpcServer: IDisposable,IRpcServer<string>
     {
-        private static string _consumerEndpoint;
-        private static string _hostName;
+        private readonly string _consumerEndpoint;
+        private readonly string _hostName;
         private EventHandler<BasicDeliverEventArgs> _consumerOnReceived;
         private EventingBasicConsumer _consumer;
         public RpcServer(Dictionary<string, string> config)
